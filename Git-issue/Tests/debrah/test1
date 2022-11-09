@@ -1,0 +1,48 @@
+#!/usr/bin/bash
+text= $(cat $1)
+
+
+foo={$text}
+startedDie=0
+subStrLength=617
+
+length=${#text}
+
+for (( i=0; i<${#foo}; i++ )); do
+    stop=$(($i + $subStrLength))
+
+    if [ $stop -gt $(($length - 1 )) ]
+    then
+        break
+    fi
+    substr=`cut -c $i-$stop<<< $text`
+    
+   
+    if [[ "$substr" =~ 'die(_(' ]]; then
+        startedDie=1
+        subStrLength=1
+    fi
+
+    if [[ "$substr" =~ ')' ]]; then
+        startedDie=0
+        subStrLength=617
+    fi
+
+
+    if [[ $startedDie == 1 ]]
+    then
+        wordCut=$i 
+        wordChar=`cut -c $i-$wordCut<<< $text`
+        echo $wordChar
+        if [[ "$wordChar" =~ ^[A-Z] ]]; then
+            lowercase="${wordChar,,}"
+            lowerIndex=$(($i - 1))
+            upperIndex=$(($i + 1))
+            text="${text:0:lowerIndex}${lowercase}${text:$i}"
+        fi
+    fi
+
+
+done
+
+echo $text
